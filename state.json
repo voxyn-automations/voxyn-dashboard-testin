@@ -1,1 +1,102 @@
-{"brand":{"name":"VOXYN","timezone":""},"daily_history":[],"evidence":{"linkedin_access":"UNKNOWN","publisher_mode":"DISABLED","safe_launch_verified":false},"next_post":null,"profile":"public_pages","publisher_grace_minutes":0,"publishing_block":null,"queue":[],"recent_activity":[],"schedule":[],"schema_version":3,"system":{"ai_provider":"UNKNOWN","content_engine":"UNKNOWN","linkedin":"UNKNOWN","publisher":"UNKNOWN","scheduler":"UNKNOWN","slack":"UNKNOWN","source_pipeline":"UNKNOWN"},"today":{"auth_required":0,"configured":0,"failed":0,"generated":0,"missed":0,"posted":0,"processing":0,"ready":0},"updated_at":null}
+{
+  "brand": {
+    "name": "akash",
+    "timezone": "Asia/Kolkata"
+  },
+  "daily_history": [],
+  "evidence": {
+    "linkedin_access": "CONFIGURED_UNVERIFIED",
+    "publisher_mode": "DISABLED",
+    "safe_launch_verified": false
+  },
+  "next_post": null,
+  "profile": "public_pages",
+  "publisher_grace_minutes": 70,
+  "publishing_block": null,
+  "queue": [
+    {
+      "post_type": "IMAGE",
+      "scheduled_local": "08:30",
+      "status": "UNKNOWN",
+      "topic": "Slot 1"
+    },
+    {
+      "post_type": "IMAGE",
+      "scheduled_local": "10:55",
+      "status": "UNKNOWN",
+      "topic": "Slot 2"
+    },
+    {
+      "post_type": "IMAGE",
+      "scheduled_local": "13:30",
+      "status": "UNKNOWN",
+      "topic": "Slot 3"
+    },
+    {
+      "post_type": "IMAGE",
+      "scheduled_local": "16:30",
+      "status": "UNKNOWN",
+      "topic": "Slot 4"
+    },
+    {
+      "post_type": "IMAGE",
+      "scheduled_local": "17:30",
+      "status": "UNKNOWN",
+      "topic": "Slot 5"
+    }
+  ],
+  "recent_activity": [],
+  "schedule": [
+    {
+      "local_time": "08:30",
+      "post_type": "IMAGE",
+      "slot": "Slot 1",
+      "status": "UNKNOWN"
+    },
+    {
+      "local_time": "10:55",
+      "post_type": "IMAGE",
+      "slot": "Slot 2",
+      "status": "UNKNOWN"
+    },
+    {
+      "local_time": "13:30",
+      "post_type": "IMAGE",
+      "slot": "Slot 3",
+      "status": "UNKNOWN"
+    },
+    {
+      "local_time": "16:30",
+      "post_type": "IMAGE",
+      "slot": "Slot 4",
+      "status": "UNKNOWN"
+    },
+    {
+      "local_time": "17:30",
+      "post_type": "IMAGE",
+      "slot": "Slot 5",
+      "status": "UNKNOWN"
+    }
+  ],
+  "schema_version": 3,
+  "system": {
+    "ai_provider": "UNKNOWN",
+    "content_engine": "UNKNOWN",
+    "linkedin": "READY",
+    "publisher": "PAUSED",
+    "scheduler": "UNKNOWN",
+    "slack": "UNKNOWN",
+    "source_pipeline": "UNKNOWN"
+  },
+  "today": {
+    "auth_required": 0,
+    "configured": 5,
+    "failed": 0,
+    "generated": 0,
+    "missed": 0,
+    "posted": 0,
+    "processing": 0,
+    "ready": 0
+  },
+  "updated_at": "2026-09-19T00:17:06.628634+05:30"
+}

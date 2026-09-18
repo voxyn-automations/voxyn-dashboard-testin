@@ -1,0 +1,83 @@
+name: Deploy GitHub Pages
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: true
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Wait for first real sanitized snapshot
+        id: snapshot
+        run: |
+          python - <<'PY'
+          import json, os
+          ready = bool(json.load(open('state.json', encoding='utf-8')).get('updated_at'))
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write(f'ready={str(ready).lower()}\n')
+          message = 'Synchronized snapshot ready for Pages.' if ready else 'WAITING_FOR_FIRST_SYNC: No Pages deployment was attempted. Run the one-time private dashboard sync after completing dashboard setup.'
+          print(message)
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as summary:
+              summary.write(('## Snapshot ready\nThe real Pages deployment path will run.\n' if ready else '## WAITING_FOR_FIRST_SYNC\nNo Pages deployment was attempted. Run the one-time private dashboard sync after completing dashboard setup.\n'))
+          PY
+      - name: Verify Pages configuration
+        if: steps.snapshot.outputs.ready == 'true'
+        id: pages
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python - <<'PY'
+          import json, os, urllib.request, urllib.error
+          request = urllib.request.Request(f"https://api.github.com/repos/{os.environ['GITHUB_REPOSITORY']}/pages", headers={'Authorization': 'Bearer '+os.environ['GH_TOKEN'], 'Accept': 'application/vnd.github+json'})
+          configured = False
+          try:
+              with urllib.request.urlopen(request, timeout=20) as response:
+                  configured = json.load(response).get('build_type') == 'workflow'
+          except urllib.error.HTTPError as error:
+              if error.code not in (403, 404): raise
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write(f'configured={str(configured).lower()}\n')
+          print('GitHub Actions Pages source verified.' if configured else 'PAGES_ACTION_REQUIRED: Settings → Pages → Source → GitHub Actions. Then rerun this deployment or push the next dashboard state update. No deployment was attempted.')
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as summary:
+              summary.write('Pages source: **GitHub Actions configured**.\n' if configured else 'Pages source: **ACTION REQUIRED — select GitHub Actions**.\n')
+          PY
+      - name: Verify managed dashboard provenance
+        if: steps.snapshot.outputs.ready == 'true' && steps.pages.outputs.configured == 'true'
+        run: |
+          python - <<'PY'
+          import json, pathlib
+          root = pathlib.Path('.')
+          manifest = json.loads((root / 'voxyn-managed.json').read_text(encoding='utf-8'))
+          html = (root / 'index.html').read_text(encoding='utf-8')
+          state = json.loads((root / 'state.json').read_text(encoding='utf-8'))
+          expected = manifest['fingerprint']
+          if f'content="{expected}"' not in html:
+              raise SystemExit('DASHBOARD_ASSET_PROVENANCE_FAILED: expected build fingerprint is absent')
+          for asset in manifest['assets'].values():
+              if asset not in html or not (root / asset).is_file():
+                  raise SystemExit(f'DASHBOARD_ASSET_PROVENANCE_FAILED: missing current asset {asset}')
+          if state.get('schema_version') not in (1, 2):
+              raise SystemExit('DASHBOARD_ASSET_PROVENANCE_FAILED: unsupported state schema')
+          print(f'DASHBOARD_ASSET_PROVENANCE_OK fingerprint={expected}')
+          PY
+      - uses: actions/configure-pages@v6
+        if: steps.snapshot.outputs.ready == 'true' && steps.pages.outputs.configured == 'true'
+      - uses: actions/upload-pages-artifact@v5
+        if: steps.snapshot.outputs.ready == 'true' && steps.pages.outputs.configured == 'true'
+        with:
+          path: .
+      - uses: actions/deploy-pages@v5
+        name: Deploy GitHub Pages
+        if: steps.snapshot.outputs.ready == 'true' && steps.pages.outputs.configured == 'true'
+        id: deployment

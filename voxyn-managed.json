@@ -1,19 +1,23 @@
 {
   "assets": {
-    "css": "static/operations.86716c2af485.css",
-    "js": "static/operations.827821024bc6.js",
+    "css": "static/operations.c31724f054be.css",
+    "favicon": "static/voxyn-favicon.9490d30b07d4.png",
+    "js": "static/operations.ceb832bfda47.js",
+    "logo": "static/voxyn-logo.935139a7fcee.png",
     "theme": "static/theme.c2a79630e611.js"
   },
-  "build": "41943b0a36ee",
-  "fingerprint": "RC11.4/41943b0a36ee",
+  "build": "2c4af5dcdb65",
+  "fingerprint": "RC11.5/2c4af5dcdb65",
   "managed_files": [
     "index.html",
     "state.json",
-    "static/operations.827821024bc6.js",
-    "static/operations.86716c2af485.css",
+    "static/operations.c31724f054be.css",
+    "static/operations.ceb832bfda47.js",
     "static/theme.c2a79630e611.js",
+    "static/voxyn-favicon.9490d30b07d4.png",
+    "static/voxyn-logo.935139a7fcee.png",
     "voxyn-managed.json"
   ],
-  "release": "RC11.4",
+  "release": "RC11.5",
   "schema_version": 1
 }

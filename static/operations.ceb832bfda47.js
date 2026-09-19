@@ -3,7 +3,8 @@ const statuses=new Set(["HEALTHY","READY","ACTIVE","PAUSED","ACTION_REQUIRED","D
 const terminalScheduleStatuses=new Set(["POSTED","MISSED","AUTH_REQUIRED","FAILED"]);
 const esc=value=>String(value??"—").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const label=value=>String(value).replaceAll("_"," ").toLowerCase().replace(/\b\w/g,c=>c.toUpperCase());
-const badge=value=>'<span class="status badge status-'+esc(String(value).toLowerCase().replaceAll("_","-"))+'">'+esc(String(value).replaceAll("_"," "))+'</span>';
+const displayStatus=value=>String(value)==="AUTH_REQUIRED"?"ACTION_REQUIRED":String(value);
+const badge=value=>{const status=displayStatus(value);return '<span class="status badge status-'+esc(status.toLowerCase().replaceAll("_","-"))+'" aria-label="Status: '+esc(status.replaceAll("_"," "))+'">'+esc(status.replaceAll("_"," "))+'</span>'};
 let currentTimezone="",snapshot=null,selectedRange="today",customRange=null,drawerReturnFocus=null;
 function setDrawer(open){const drawer=document.querySelector("#dashboard-navigation"),backdrop=document.querySelector("#nav-backdrop"),button=document.querySelector("#mobile-menu");drawer.classList.toggle("open",open);backdrop.hidden=!open;document.body.classList.toggle("drawer-open",open);button.setAttribute("aria-expanded",String(open));if(open){drawerReturnFocus=document.activeElement;document.querySelector("#drawer-close").focus()}else if(drawerReturnFocus){drawerReturnFocus.focus();drawerReturnFocus=null}}
 
@@ -28,12 +29,16 @@ function totals(rows){
   result.expected=rows.some(row=>row.expected===null||row.expected===undefined)?null:rows.reduce((sum,row)=>sum+Number(row.expected),0);
   return result;
 }
-function metricCards(values,synced=true,includeDays=false){
-  const metrics=[];
-  if(includeDays)metrics.push(["Active Days",values.active_days]);
-  metrics.push(["Expected",values.expected],["Generated",values.generated],["Posted",values.posted],["Ready",values.ready],["Processing",values.processing],["Failed",values.failed],["Action Required",values.auth_required],["Missed",values.missed]);
-  const icons=["◇","✦","✓","●","◆","!","!","◷","◫"];
-  return metrics.map(([name,value],index)=>'<article class="kpi"><div class="kpi-icon">'+icons[index]+'</div><div><span>'+esc(name)+'</span><strong>'+esc(synced?metric(value):"—")+'</strong></div></article>').join("");
+function metricPercent(value,expected){
+  const denominator=Number(expected);
+  if(!Number.isFinite(denominator)||denominator<=0)return null;
+  const numerator=Number(value);
+  return Number.isFinite(numerator)?Math.round(numerator/denominator*100):null;
+}
+function metricCards(values,synced=true){
+  const metrics=[["Expected",values.expected],["Generated",values.generated],["Posted",values.posted],["Ready",values.ready],["Processing",values.processing],["Failed",values.failed],["Action Required",values.auth_required],["Missed",values.missed]];
+  const icons=["◇","✦","✓","●","◆","!","!","◫"];
+  return metrics.map(([name,value],index)=>{const percent=synced?metricPercent(name==="Expected"?values.expected:value,values.expected):null,percentText=percent===null?"—":percent+"%",width=percent===null?0:Math.max(0,Math.min(100,percent));return '<article class="kpi"><div class="kpi-icon" aria-hidden="true">'+icons[index]+'</div><div class="kpi-content"><span>'+esc(name)+'</span><div class="kpi-value"><strong>'+esc(synced?metric(value):"—")+'</strong><small>'+esc(percentText)+'</small></div><div class="kpi-progress" role="progressbar" aria-label="'+esc(name)+' percentage" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+(percent===null?0:width)+'"><i style="width:'+width+'%"></i></div></div></article>'}).join("");
 }
 function periodName(){
   if(selectedRange==="today")return "Performance · Today";
@@ -63,7 +68,7 @@ function renderHistory(data,rows){
 function renderPeriod(data){
   const rows=rangeRows(data),historical=selectedRange!=="today",values=historical?totals(rows):{expected:data.today.configured,...data.today};
   document.querySelector("#period-title").textContent=periodName();
-  document.querySelector("#summary").innerHTML=metricCards(values,!!data.updated_at,historical&&selectedRange==="all");
+  document.querySelector("#summary").innerHTML=metricCards(values,!!data.updated_at);
   document.querySelectorAll("[data-range]").forEach(button=>{const active=button.dataset.range===selectedRange;button.classList.toggle("active",active);button.setAttribute("aria-selected",String(active))});
   document.querySelector("#custom-range").hidden=selectedRange!=="custom";
   renderHistory(data,rows);
@@ -101,7 +106,7 @@ function render(data){
   if(![1,2,3].includes(data.schema_version)||!data.brand||!Array.isArray(data.queue))throw new Error("snapshot schema");
   data.evidence=data.evidence||{safe_launch_verified:false,linkedin_access:data.publishing_block?"ACTION_REQUIRED":"UNKNOWN",publisher_mode:data.system.publisher==="PAUSED"?"DISABLED":"LIVE"};
   const query=selector=>document.querySelector(selector),synced=!!data.updated_at,publicView=data.profile==="public_pages";snapshot=data;currentTimezone=synced?data.brand.timezone:"";
-  ["#brand","#mobile-brand","#footer-brand"].forEach(selector=>query(selector).textContent=data.brand.name);query(".logo span").textContent=data.brand.name.slice(0,1);document.title=data.brand.name+" Operations";
+  const buyerName=String(data.brand.name||"").trim(),identity=query("#buyer-identity");query("#buyer-name").textContent=buyerName;identity.hidden=!buyerName||buyerName.toUpperCase()==="VOXYN";document.title="VOXYN | LinkedIn Automation Control Center";
   query("#timezone").textContent=currentTimezone||"Not yet synchronized";query("#updated").textContent=synced?"Updated "+new Date(data.updated_at).toLocaleString("en-US",{timeZone:currentTimezone,dateStyle:"medium",timeStyle:"short"}):"Not yet synchronized";
   query("#system-status strong").textContent=!synced?"Waiting for first sync":data.publishing_block?"Action required":"Snapshot synchronized";query("#system-status").className="system-status "+(data.publishing_block?"level-warning":"level-healthy");
   query("#health").innerHTML=Object.entries(data.system).map(([name,status])=>{let detail="";if(name==="scheduler"&&status==="UNKNOWN")detail='<p>No recent external scheduler run has been observed.</p>';if(["content_engine","source_pipeline","ai_provider","slack"].includes(name)&&data.evidence.safe_launch_verified&&!data.today.generated)detail='<p>Safe Launch capability verified; no production run recorded today.</p>';if(name==="publisher"&&status==="PAUSED"&&!data.publishing_block)detail='<p>Publishing is intentionally disabled by configuration.</p>';return '<article class="health-card '+(status==="ACTION_REQUIRED"?"action-required":["HEALTHY","READY","ACTIVE"].includes(status)?"healthy":status==="UNKNOWN"?"unknown":"warning")+'"><span class="health-icon">✦</span><div><h3>'+esc(label(name))+'</h3>'+badge(statuses.has(status)?status:"UNKNOWN")+detail+'</div></article>'}).join("");
@@ -122,5 +127,5 @@ document.querySelectorAll("#dashboard-navigation nav a").forEach(link=>link.addE
 document.addEventListener("keydown",event=>{if(event.key==="Escape"&&document.querySelector("#dashboard-navigation").classList.contains("open"))setDrawer(false)});
 document.querySelectorAll("[data-range]").forEach(button=>button.addEventListener("click",()=>{selectedRange=button.dataset.range;if(selectedRange!=="custom")customRange=null;if(snapshot)renderPeriod(snapshot)}));
 document.querySelector("#custom-range").addEventListener("submit",event=>{event.preventDefault();const from=document.querySelector("#range-from").value,to=document.querySelector("#range-to").value,error=document.querySelector("#range-error");if(!/^\d{4}-\d{2}-\d{2}$/.test(from)||!/^\d{4}-\d{2}-\d{2}$/.test(to)||from>to){error.textContent="Choose valid dates with From on or before To.";return}customRange={from,to};error.textContent="";if(snapshot)renderPeriod(snapshot)});
-window.VoxynDashboard={buyerDate,rangeRows,totals,scheduleState,renderSchedule};
+window.VoxynDashboard={buyerDate,rangeRows,totals,metricPercent,scheduleState,renderSchedule};
 refresh();setInterval(refresh,45000);setInterval(clock,1000);setInterval(()=>{if(snapshot&&selectedRange==="today"){renderSchedule(snapshot);renderPeriod(snapshot)}},30000);

@@ -35,10 +35,19 @@ function metricPercent(value,expected){
   const numerator=Number(value);
   return Number.isFinite(numerator)?Math.round(numerator/denominator*100):null;
 }
+const kpiIcons={
+  expected:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18M8 14h3M13 14h3M8 17h3"/></svg>',
+  generated:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 1.4 4.1L17.5 8.5l-4.1 1.4L12 14l-1.4-4.1-4.1-1.4 4.1-1.4L12 3Z"/><path d="m18.5 14 .8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8.8-2.2Z"/></svg>',
+  posted:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4 20-7Z"/><path d="M22 2 11 13"/></svg>',
+  ready:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8 12 2.6 2.6L16.5 9"/></svg>',
+  processing:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7h-7l2.5-2.5M4 17h7l-2.5 2.5M19 7a8 8 0 0 0-13-2M5 17a8 8 0 0 0 13 2"/></svg>',
+  failed:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m9 9 6 6m0-6-6 6"/></svg>',
+  auth_required:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 2.8 20h18.4L12 3Z"/><path d="M12 9v5m0 3v.1"/></svg>',
+  missed:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="12" r="8"/><path d="M11 8v5l3 2m4-5 4 4m0-4-4 4"/></svg>'
+};
 function metricCards(values,synced=true){
-  const metrics=[["Expected",values.expected],["Generated",values.generated],["Posted",values.posted],["Ready",values.ready],["Processing",values.processing],["Failed",values.failed],["Action Required",values.auth_required],["Missed",values.missed]];
-  const icons=["◇","✦","✓","●","◆","!","!","◫"];
-  return metrics.map(([name,value],index)=>{const percent=synced?metricPercent(name==="Expected"?values.expected:value,values.expected):null,percentText=percent===null?"—":percent+"%",width=percent===null?0:Math.max(0,Math.min(100,percent));return '<article class="kpi"><div class="kpi-icon" aria-hidden="true">'+icons[index]+'</div><div class="kpi-content"><span>'+esc(name)+'</span><div class="kpi-value"><strong>'+esc(synced?metric(value):"—")+'</strong><small>'+esc(percentText)+'</small></div><div class="kpi-progress" role="progressbar" aria-label="'+esc(name)+' percentage" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+(percent===null?0:width)+'"><i style="width:'+width+'%"></i></div></div></article>'}).join("");
+  const metrics=[["expected","Expected",values.expected],["generated","Generated",values.generated],["posted","Posted",values.posted],["ready","Ready",values.ready],["processing","Processing",values.processing],["failed","Failed",values.failed],["auth_required","Action Required",values.auth_required],["missed","Missed",values.missed]];
+  return metrics.map(([key,name,value])=>{const percent=synced?metricPercent(key==="expected"?values.expected:value,values.expected):null,percentText=percent===null?"—":percent+"%",width=percent===null?0:Math.max(0,Math.min(100,percent));return '<article class="kpi kpi-'+key.replaceAll("_","-")+'"><div class="kpi-head"><div class="kpi-icon">'+kpiIcons[key]+'</div><span>'+esc(name)+'</span></div><div class="kpi-value"><strong>'+esc(synced?metric(value):"—")+'</strong><small>'+esc(percentText)+'</small></div><div class="kpi-progress" role="progressbar" aria-label="'+esc(name)+' percentage" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+(percent===null?0:width)+'"><i style="width:'+width+'%"></i></div></article>'}).join("");
 }
 function periodName(){
   if(selectedRange==="today")return "Performance · Today";

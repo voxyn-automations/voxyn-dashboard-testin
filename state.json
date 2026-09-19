@@ -6,14 +6,25 @@
   "daily_history": [
     {
       "auth_required": 0,
+      "date": "2026-09-18",
+      "expected": null,
+      "failed": 0,
+      "generated": 5,
+      "missed": 5,
+      "posted": 0,
+      "processing": 0,
+      "ready": 0
+    },
+    {
+      "auth_required": 0,
       "date": "2026-09-19",
       "expected": 5,
       "failed": 0,
       "generated": 5,
-      "missed": 0,
-      "posted": 0,
+      "missed": 1,
+      "posted": 1,
       "processing": 0,
-      "ready": 5
+      "ready": 3
     }
   ],
   "evidence": {
@@ -23,7 +34,7 @@
   },
   "next_post": {
     "post_type": "IMAGE",
-    "scheduled_local": "08:30",
+    "scheduled_local": "13:30",
     "status": "READY",
     "topic": "Next production post"
   },
@@ -34,13 +45,13 @@
     {
       "post_type": "IMAGE",
       "scheduled_local": "08:30",
-      "status": "READY",
+      "status": "MISSED",
       "topic": "Slot 1"
     },
     {
       "post_type": "IMAGE",
       "scheduled_local": "10:55",
-      "status": "READY",
+      "status": "POSTED",
       "topic": "Slot 2"
     },
     {
@@ -68,6 +79,24 @@
       "count": 1,
       "kind": "DAILY_GENERATION",
       "result": "SUCCESS"
+    },
+    {
+      "at": "2026-09-19",
+      "count": 1,
+      "kind": "PUBLISHER",
+      "result": "POSTED"
+    },
+    {
+      "at": "2026-09-19",
+      "count": 1,
+      "kind": "PUBLISHER",
+      "result": "MISSED"
+    },
+    {
+      "at": "2026-09-18",
+      "count": 5,
+      "kind": "PUBLISHER",
+      "result": "MISSED"
     }
   ],
   "schedule": [
@@ -75,13 +104,13 @@
       "local_time": "08:30",
       "post_type": "IMAGE",
       "slot": "Slot 1",
-      "status": "READY"
+      "status": "MISSED"
     },
     {
       "local_time": "10:55",
       "post_type": "IMAGE",
       "slot": "Slot 2",
-      "status": "READY"
+      "status": "POSTED"
     },
     {
       "local_time": "13:30",
@@ -106,9 +135,9 @@
   "system": {
     "ai_provider": "HEALTHY",
     "content_engine": "HEALTHY",
-    "linkedin": "READY",
+    "linkedin": "HEALTHY",
     "publisher": "PAUSED",
-    "scheduler": "UNKNOWN",
+    "scheduler": "ACTIVE",
     "slack": "READY",
     "source_pipeline": "HEALTHY"
   },
@@ -117,10 +146,10 @@
     "configured": 5,
     "failed": 0,
     "generated": 5,
-    "missed": 0,
-    "posted": 0,
+    "missed": 1,
+    "posted": 1,
     "processing": 0,
-    "ready": 5
+    "ready": 3
   },
-  "updated_at": "2026-09-19T09:50:38.716444+05:30"
+  "updated_at": "2026-09-19T11:30:59.594948+05:30"
 }

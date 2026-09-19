@@ -64,12 +64,6 @@
   ],
   "recent_activity": [
     {
-      "at": "2026-09-19T00:02:04.614419+00:00",
-      "count": 1,
-      "kind": "DAILY_GENERATION",
-      "result": "SUCCESS"
-    },
-    {
       "at": "2026-09-19",
       "count": 1,
       "kind": "DAILY_GENERATION",
@@ -114,7 +108,7 @@
     "content_engine": "HEALTHY",
     "linkedin": "READY",
     "publisher": "PAUSED",
-    "scheduler": "ACTIVE",
+    "scheduler": "UNKNOWN",
     "slack": "READY",
     "source_pipeline": "HEALTHY"
   },
@@ -128,5 +122,5 @@
     "processing": 0,
     "ready": 5
   },
-  "updated_at": "2026-09-19T05:32:26.477576+05:30"
+  "updated_at": "2026-09-19T09:50:38.716444+05:30"
 }

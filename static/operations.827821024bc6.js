@@ -93,7 +93,7 @@ function renderSchedule(data,now=new Date()){
   if(state.kind==="FUTURE"){eyebrow.textContent="NEXT SCHEDULED SLOT";target.innerHTML=`<h2>${esc(state.row.local_time)}</h2><p>${esc(state.row.slot)}</p><p>Queue status: ${badge(state.row.status)}</p>${capability}`;return}
   eyebrow.textContent="TODAY'S SCHEDULE COMPLETE";
   const unresolved=state.unresolved?`<p>${state.unresolved} READY item${state.unresolved===1?"":"s"} remain.</p>`:"<p>No future production slots today.</p>";
-  target.innerHTML=`<h2>Schedule complete</h2>${unresolved}<p>Next scheduled window: Tomorrow ${esc(state.next.local_time)}</p>${blocked?capability:""}`;
+  target.innerHTML=`<h2>Schedule complete</h2>${unresolved}<p>Next scheduled window: Tomorrow ${esc(state.next.local_time)}</p>${capability}`;
 }
 function clock(){if(!currentTimezone)return;document.querySelector("#live-time").textContent=new Intl.DateTimeFormat("en-US",{timeZone:currentTimezone,hour:"numeric",minute:"2-digit",second:"2-digit",hour12:true}).format(new Date());document.querySelector("#live-date").textContent=new Intl.DateTimeFormat("en-US",{timeZone:currentTimezone,dateStyle:"full"}).format(new Date())}
 function syncThemeButton(){const dark=document.documentElement.dataset.theme==="dark",button=document.querySelector("#theme-toggle");button.setAttribute("aria-pressed",String(dark));button.querySelector("span").textContent=dark?"☾":"☀";button.querySelector("strong").textContent=dark?"Dark":"Light"}

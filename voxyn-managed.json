@@ -1,19 +1,19 @@
 {
   "assets": {
     "css": "static/operations.86716c2af485.css",
-    "js": "static/operations.e1a0f049d2ab.js",
+    "js": "static/operations.827821024bc6.js",
     "theme": "static/theme.c2a79630e611.js"
   },
-  "build": "73a68dd43b24",
-  "fingerprint": "RC11.1/73a68dd43b24",
+  "build": "41943b0a36ee",
+  "fingerprint": "RC11.4/41943b0a36ee",
   "managed_files": [
     "index.html",
     "state.json",
+    "static/operations.827821024bc6.js",
     "static/operations.86716c2af485.css",
-    "static/operations.e1a0f049d2ab.js",
     "static/theme.c2a79630e611.js",
     "voxyn-managed.json"
   ],
-  "release": "RC11.1",
+  "release": "RC11.4",
   "schema_version": 1
 }

@@ -67,8 +67,11 @@ jobs:
           for asset in manifest['assets'].values():
               if asset not in html or not (root / asset).is_file():
                   raise SystemExit(f'DASHBOARD_ASSET_PROVENANCE_FAILED: missing current asset {asset}')
-          if state.get('schema_version') not in (1, 2):
-              raise SystemExit('DASHBOARD_ASSET_PROVENANCE_FAILED: unsupported state schema')
+          supported = (1, 2, 3)
+          detected = state.get('schema_version')
+          if isinstance(detected, bool) or detected not in supported:
+              label = 'missing' if detected is None else str(detected)
+              raise SystemExit(f'DASHBOARD_STATE_SCHEMA_UNSUPPORTED detected={label} supported={",".join(map(str, supported))}')
           print(f'DASHBOARD_ASSET_PROVENANCE_OK fingerprint={expected}')
           PY
       - uses: actions/configure-pages@v6

@@ -14,6 +14,13 @@ function zonedParts(value,timezone){
   return {date:`${get("year")}-${get("month")}-${get("day")}`,minutes:Number(get("hour"))*60+Number(get("minute"))};
 }
 function buyerDate(value,timezone){return zonedParts(new Date(value),timezone).date}
+function currentDayView(data,now=new Date()){
+  if(!data.updated_at||!data.brand?.timezone)return data;
+  const today=buyerDate(now,data.brand.timezone),snapshotDay=buyerDate(data.updated_at,data.brand.timezone);
+  if(snapshotDay===today)return data;
+  const emptyStatus=row=>({...row,status:"UNKNOWN"});
+  return {...data,today:{...data.today,generated:0,ready:0,processing:0,posted:0,failed:0,auth_required:0,missed:0},queue:(data.queue||[]).map(emptyStatus),schedule:(data.schedule||[]).map(emptyStatus),next_post:null};
+}
 function shiftDate(iso,days){const value=new Date(iso+"T12:00:00Z");value.setUTCDate(value.getUTCDate()+days);return value.toISOString().slice(0,10)}
 function metric(value){return value===null||value===undefined?"—":value}
 function rangeRows(data){
@@ -75,7 +82,7 @@ function renderHistory(data,rows){
   mobile.innerHTML=ordered.length?ordered.map(row=>`<article class="history-card"><div class="history-card-head"><h3>${esc(row.date)}</h3><strong>${metric(row.posted)} posted</strong></div><p class="history-meta">Expected ${metric(row.expected)} · Generated ${metric(row.generated)}</p><p class="history-meta">Ready ${metric(row.ready)} · Processing ${metric(row.processing)}</p><p class="history-meta">Failed ${metric(row.failed)} · Action Required ${metric(row.auth_required)} · Missed ${metric(row.missed)}</p></article>`).join(""):`<div class="empty-state">${empty}</div>`;
 }
 function renderPeriod(data){
-  const rows=rangeRows(data),historical=selectedRange!=="today",values=historical?totals(rows):{expected:data.today.configured,...data.today};
+  const rows=rangeRows(data),historical=selectedRange!=="today",view=currentDayView(data),values=historical?totals(rows):{expected:view.today.configured,...view.today};
   document.querySelector("#period-title").textContent=periodName();
   document.querySelector("#summary").innerHTML=metricCards(values,!!data.updated_at);
   document.querySelectorAll("[data-range]").forEach(button=>{const active=button.dataset.range===selectedRange;button.classList.toggle("active",active);button.setAttribute("aria-selected",String(active))});
@@ -114,6 +121,7 @@ function syncThemeButton(){const dark=document.documentElement.dataset.theme==="
 function render(data){
   if(![1,2,3].includes(data.schema_version)||!data.brand||!Array.isArray(data.queue))throw new Error("snapshot schema");
   data.evidence=data.evidence||{safe_launch_verified:false,linkedin_access:data.publishing_block?"ACTION_REQUIRED":"UNKNOWN",publisher_mode:data.system.publisher==="PAUSED"?"DISABLED":"LIVE"};
+  data=currentDayView(data);
   const query=selector=>document.querySelector(selector),synced=!!data.updated_at,publicView=data.profile==="public_pages";snapshot=data;currentTimezone=synced?data.brand.timezone:"";
   const buyerName=String(data.brand.name||"").trim(),identity=query("#buyer-identity");query("#buyer-name").textContent=buyerName;identity.hidden=!buyerName||buyerName.toUpperCase()==="VOXYN";document.title="VOXYN | LinkedIn Automation Control Center";
   query("#timezone").textContent=currentTimezone||"Not yet synchronized";query("#updated").textContent=synced?"Updated "+new Date(data.updated_at).toLocaleString("en-US",{timeZone:currentTimezone,dateStyle:"medium",timeStyle:"short"}):"Not yet synchronized";
@@ -136,5 +144,5 @@ document.querySelectorAll("#dashboard-navigation nav a").forEach(link=>link.addE
 document.addEventListener("keydown",event=>{if(event.key==="Escape"&&document.querySelector("#dashboard-navigation").classList.contains("open"))setDrawer(false)});
 document.querySelectorAll("[data-range]").forEach(button=>button.addEventListener("click",()=>{selectedRange=button.dataset.range;if(selectedRange!=="custom")customRange=null;if(snapshot)renderPeriod(snapshot)}));
 document.querySelector("#custom-range").addEventListener("submit",event=>{event.preventDefault();const from=document.querySelector("#range-from").value,to=document.querySelector("#range-to").value,error=document.querySelector("#range-error");if(!/^\d{4}-\d{2}-\d{2}$/.test(from)||!/^\d{4}-\d{2}-\d{2}$/.test(to)||from>to){error.textContent="Choose valid dates with From on or before To.";return}customRange={from,to};error.textContent="";if(snapshot)renderPeriod(snapshot)});
-window.VoxynDashboard={buyerDate,rangeRows,totals,metricPercent,scheduleState,renderSchedule};
-refresh();setInterval(refresh,45000);setInterval(clock,1000);setInterval(()=>{if(snapshot&&selectedRange==="today"){renderSchedule(snapshot);renderPeriod(snapshot)}},30000);
+window.VoxynDashboard={buyerDate,currentDayView,rangeRows,totals,metricPercent,scheduleState,renderSchedule};
+refresh();setInterval(refresh,45000);setInterval(clock,1000);setInterval(()=>{if(snapshot&&selectedRange==="today")render(snapshot)},30000);
